@@ -37,6 +37,22 @@ gross-out lines (socks, garbage, feet) all converge on the same
 smell joke. Toothpaste-plus-anchovy wins because the two halves
 fight each other — the pitch's own selling point (fresh breath)
 is the thing the second topping destroys.
+
+Why the chosen line beats the two named runners-up, criterion by
+criterion (humour first, freshness second):
+- vs. runner-up 1 (wet socks): both name a terrible topping, but the
+  sock line's only joke is "smelly thing on pizza", a gross-out with
+  no turn — the humour criterion is where it loses. The chosen line
+  has a real two-beat joke (benefit promised, benefit destroyed) and
+  a second punch in the dentist line, and it is fresher: socks are
+  the first gross topping anyone reaches for.
+- vs. runner-up 2 (soggy cereal + expired milk): the cereal line has
+  a fresher premise than the sock line, but its punchline
+  ("breakfast's revenge") is a stock phrase and its topping is only
+  mildly awful, so it scores lower on both "terrible topping" and
+  "funny". The chosen line's toppings are each individually vile on
+  pizza and actively clash (mint vs. fish), so the awfulness and the
+  joke reinforce each other instead of competing.
 """
 
 import os
@@ -56,10 +72,19 @@ def validate_line(line: str) -> None:
 
 def main() -> None:
     validate_line(LINE)
-    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output")
+    # An empty/whitespace-only MAKEFUN_OUTPUT_DIR would make
+    # os.makedirs("") raise FileNotFoundError, so fall back to the
+    # default /output instead of trusting the env var blindly.
+    out_dir = os.environ.get("MAKEFUN_OUTPUT_DIR", "/output").strip() or "/output"
     os.makedirs(out_dir, exist_ok=True)
-    with open(os.path.join(out_dir, "entry.txt"), "w", encoding="utf-8") as f:
+    out_path = os.path.join(out_dir, "entry.txt")
+    with open(out_path, "w", encoding="utf-8") as f:
         f.write(LINE + "\n")
+    # Round-trip check: what landed on disk must be exactly the line
+    # plus its trailing newline — catches encoding or write errors
+    # that a write-only path would silently pass.
+    with open(out_path, "r", encoding="utf-8") as f:
+        assert f.read() == LINE + "\n", "entry.txt content mismatch after write"
 
 
 if __name__ == "__main__":
